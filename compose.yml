@@ -1,0 +1,121 @@
+
+services:
+  master-node:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.16.0
+    environment:
+      - discovery.type=zen-disco
+      - cluster.name=docker-cluster
+      - node.roles=master
+      - xpack.security.enabled=true
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+    networks:
+      - elastic
+      - grafana-net
+    ports:
+      - 9200:9200
+      - 9300:9300
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://122.8.148.101:9200"]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 10s
+
+  coordinating-node:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.16.0
+    environment:
+      - node.roles=coordinating
+      - xpack.security.enabled=true
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+    networks:
+      - elastic
+      - grafana-net
+    ports:
+      - 9201:9200
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://122.8.148.101:9200"]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 10s
+
+  ingest-node:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.16.0
+    environment:
+      - node.roles=ingest
+      - xpack.security.enabled=true
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+    networks:
+      - elastic
+      - grafana-net
+    ports:
+      - 9202:9200
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://122.8.148.101:9200"]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 10s
+
+  data-node:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.16.0
+    environment:
+      - node.roles=data
+      - xpack.security.enabled=true
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+    networks:
+      - elastic
+      - grafana-net
+    ports:
+      - 9203:9200
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://122.8.148.101:9200"]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 10s
+
+  snapshot-node:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.16.0
+    environment:
+      - node.roles=snapshot
+      - xpack.security.enabled=true
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+    networks:
+      - elastic
+      - grafana-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://122.8.148.101:9200"]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 10s
+
+  remote-cluster-client:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.16.0
+    environment:
+      - node.roles=remote_cluster_client
+      - xpack.security.enabled=true
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+    networks:
+      - elastic
+      - grafana-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://122.8.148.101:9200"]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 10s
+
+volumes:
+  esdata:
+    driver: local
+
+networks:
+  elastic:
+    driver: bridge
+  grafana-net:
+    driver: bridge
+
